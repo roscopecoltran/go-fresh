@@ -52,3 +52,12 @@
 [[constraint]]
   name = "github.com/Masterminds/semver"
   branch = "2.x"
+
+[[constraint]]
+  name = "github.com/hashicorp/nomad"
+  version = "0.8.3"
+
+# Fix issue, see https://github.com/coredns/coredns/pull/1203
+[[override]]
+  name = "github.com/ugorji/go"
+  revision = "8c0409fcbb70099c748d71f714529204975f6c3f"
