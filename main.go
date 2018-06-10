@@ -28,8 +28,9 @@ func main() {
 }
 
 func checkRepositories(ctx context.Context, tmpDir string) error {
-	repos := []depmap.Repository{
+	repos := []depmap.Project{
 		{
+			Name:   "github.com/terraform-providers/terraform-provider-azurerm",
 			GitURL: "https://github.com/terraform-providers/terraform-provider-azurerm.git",
 			Branch: "master",
 		},

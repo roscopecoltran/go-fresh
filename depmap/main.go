@@ -13,7 +13,8 @@ import (
 
 var errDepSystemNotUsed = errors.New("dependency system not used")
 
-type Repository struct {
+type Project struct {
+	Name   string
 	GitURL string
 	Branch string
 }
@@ -33,12 +34,12 @@ var depManagers = []func(*git.Worktree) ([]Dependency, error){
 	tryGovendor,
 }
 
-func (r *Repository) Dependencies(ctx context.Context) ([]Dependency, error) {
+func (r *Project) Dependencies(ctx context.Context) ([]Dependency, error) {
 	repo, err := git.CloneContext(ctx, memory.NewStorage(), memfs.New(), &git.CloneOptions{
 		URL:           r.GitURL,
 		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", r.Branch)),
 		SingleBranch:  true,
-		Depth:         0,
+		Depth:         1,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to clone repository %s", r.GitURL)
