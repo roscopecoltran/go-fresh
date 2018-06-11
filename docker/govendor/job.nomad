@@ -19,19 +19,7 @@ job "go-fresh-pr-govendor" {
     count = 1
 
     restart {
-      # The number of attempts to run the job within the specified interval.
       attempts = 0
-      interval = "30m"
-
-      # The "delay" parameter specifies the duration to wait before restarting
-      # a task after it has failed.
-      delay = "15s"
-
-     # The "mode" parameter controls what happens when a task has restarted
-     # "attempts" times within the interval. "delay" mode delays the next
-     # restart until the next interval. "fail" mode does not restart the task
-     # if "attempts" has been hit within the interval.
-      mode = "fail"
     }
 
     ephemeral_disk {
@@ -47,14 +35,14 @@ job "go-fresh-pr-govendor" {
 
       # The "size" parameter specifies the size in MB of shared ephemeral disk
       # between tasks in the group.
-      size = 300
+      size = 1000
     }
 
     task "pr" {
       driver = "docker"
 
       config {
-        image = "go-fresh-govendor"
+        image = "gofrsh/govendor-pr:latest"
         args = [
           "${NOMAD_META_PROJECT}", 
           "${NOMAD_META_GIT_REMOTE}", 
@@ -66,8 +54,8 @@ job "go-fresh-pr-govendor" {
       }
 
       env {
-        "GIT_USER_NAME" = "go-fresh-bot"
-        "GIT_USER_EMAIL" = "email@example.com"
+        "GIT_USER_NAME"   = "go-fresh-bot"
+        "GIT_USER_EMAIL"  = "email@example.com"
         "GITHUB_USERNAME" = "go-fresh-dev"
         "GITHUB_TOKEN" = "abc"
       }
