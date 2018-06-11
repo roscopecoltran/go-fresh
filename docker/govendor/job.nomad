@@ -64,6 +64,13 @@ job "go-fresh-pr-govendor" {
           "${NOMAD_META_TOREVISION}",
         ]
       }
+
+      env {
+        "GIT_USER_NAME" = "go-fresh-bot"
+        "GIT_USER_EMAIL" = "email@example.com"
+        "GITHUB_USERNAME" = "go-fresh-dev"
+        "GITHUB_TOKEN" = "abc"
+      }
     }
   }
 }
