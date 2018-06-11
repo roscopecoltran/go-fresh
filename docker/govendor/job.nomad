@@ -23,18 +23,6 @@ job "go-fresh-pr-govendor" {
     }
 
     ephemeral_disk {
-      # When sticky is true and the task group is updated, the scheduler
-      # will prefer to place the updated allocation on the same node and
-      # will migrate the data. This is useful for tasks that store data
-      # that should persist across allocation updates.
-      # sticky = true
-      #
-      # Setting migrate to true results in the allocation directory of a
-      # sticky allocation directory to be migrated.
-      # migrate = true
-
-      # The "size" parameter specifies the size in MB of shared ephemeral disk
-      # between tasks in the group.
       size = 1000
     }
 
@@ -57,7 +45,7 @@ job "go-fresh-pr-govendor" {
         "GIT_USER_NAME"   = "go-fresh-bot"
         "GIT_USER_EMAIL"  = "email@example.com"
         "GITHUB_USERNAME" = "go-fresh-dev"
-        "GITHUB_TOKEN" = "abc"
+        "GITHUB_TOKEN"    = "abc"
       }
     }
   }
