@@ -9,8 +9,9 @@ job "go-fresh-pr-govendor" {
       "PROJECT", 
       "GIT_REMOTE", 
       "GIT_BRANCH", 
-      "DEPENDENCY", 
-      "TOVERSION", 
+      "DEPENDENCY",
+      "FROMREVISION",
+      "TOVERSION",
       "TOREVISION",
     ]
   }
@@ -20,6 +21,11 @@ job "go-fresh-pr-govendor" {
 
     restart {
       attempts = 0
+    }
+
+    reschedule {
+      attempts  = 0
+      unlimited = false
     }
 
     ephemeral_disk {

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "7812043916",
+    "type": "ReleaseEvent",
+    "actor": {
+      "id": 2507163,
+      "login": "dandar3",
+      "display_login": "dandar3",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dandar3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2507163?"
+    },
+    "repo": {
+      "id": 107853381,
+      "name": "dandar3/android-arch-lifecycle-runtime",
+      "url": "https://api.github.com/repos/dandar3/android-arch-lifecycle-runtime"
+    },
+    "payload": {
+      "action": "published",
+      "release": {
+        "url": "https://api.github.com/repos/dandar3/android-arch-lifecycle-runtime/releases/11438786",
+        "assets_url": "https://api.github.com/repos/dandar3/android-arch-lifecycle-runtime/releases/11438786/assets",
+        "upload_url": "https://uploads.github.com/repos/dandar3/android-arch-lifecycle-runtime/releases/11438786/assets{?name,label}",
+        "html_url": "https://github.com/dandar3/android-arch-lifecycle-runtime/releases/tag/1.1.1",
+        "id": 11438786,
+        "node_id": "MDc6UmVsZWFzZTExNDM4Nzg2",
+        "tag_name": "1.1.1",
+        "target_commitish": "master",
+        "name": "",
+        "draft": false,
+        "author": {
+          "login": "dandar3",
+          "id": 2507163,
+          "node_id": "MDQ6VXNlcjI1MDcxNjM=",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/2507163?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dandar3",
+          "html_url": "https://github.com/dandar3",
+          "followers_url": "https://api.github.com/users/dandar3/followers",
+          "following_url": "https://api.github.com/users/dandar3/following{/other_user}",
+          "gists_url": "https://api.github.com/users/dandar3/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/dandar3/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/dandar3/subscriptions",
+          "organizations_url": "https://api.github.com/users/dandar3/orgs",
+          "repos_url": "https://api.github.com/users/dandar3/repos",
+          "events_url": "https://api.github.com/users/dandar3/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/dandar3/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "prerelease": false,
+        "created_at": "2018-06-12T12:01:38Z",
+        "published_at": "2018-06-12T12:13:55Z",
+        "assets": [],
+        "tarball_url": "https://api.github.com/repos/dandar3/android-arch-lifecycle-runtime/tarball/1.1.1",
+        "zipball_url": "https://api.github.com/repos/dandar3/android-arch-lifecycle-runtime/zipball/1.1.1",
+        "body": "Architecture Components - Lifecycle - Runtime"
+      }
+    },
+    "public": true,
+    "created_at": "2018-06-12T12:13:55Z"
+  }
+]
