@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/cli"
 
-	"github.com/paultyng/go-fresh/db"
+	"github.com/paultyng/go-fresh/data"
 )
 
 type githubListenCommand struct {
@@ -19,7 +19,7 @@ type githubListenCommand struct {
 
 	bind      string
 	secretKey []byte
-	db        db.Client
+	db        data.Client
 }
 
 func (c *githubListenCommand) Help() string {
@@ -69,7 +69,7 @@ func (c *githubListenCommand) run(ctx context.Context, args []string) error {
 	}
 	defer bdb.Close()
 
-	c.db = db.NewBoltClient(bdb)
+	c.db = data.NewBoltClient(bdb)
 
 	return http.ListenAndServe(c.bind, http.HandlerFunc(c.handleWebhook))
 }

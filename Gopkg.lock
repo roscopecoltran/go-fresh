@@ -38,6 +38,12 @@
   version = "v1.3.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/boz/go-throttle"
+  packages = ["."]
+  revision = "fdc4eab740c14b7be4fcbcb300a9aaebf716fde5"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -495,6 +501,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "55c04703c73a189ab74e4109553519ffb59a1a5c721365adbf417ca0c43b2afa"
+  inputs-digest = "7e452eee16fce9a7b1815550f74fa91bf8f2bc7e9093e917bd54109f4d369d39"
   solver-name = "gps-cdcl"
   solver-version = 1

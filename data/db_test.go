@@ -1,4 +1,4 @@
-package db
+package data
 
 import (
 	"fmt"
@@ -7,8 +7,44 @@ import (
 	"testing"
 
 	"github.com/boltdb/bolt"
+	"github.com/paultyng/go-fresh/depmap"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRegisterProject_RoundTrip(t *testing.T) {
+	assert := require.New(t)
+
+	tmp, err := ioutil.TempDir("", "")
+	assert.NoError(err)
+
+	path := filepath.Join(tmp, "bolt.db")
+
+	bdb, err := bolt.Open(path, 0644, nil)
+	assert.NoError(err)
+	defer bdb.Close()
+
+	client := NewBoltClient(bdb)
+
+	const projectName = "example.com/Foo/Bar"
+
+	expectedProject := depmap.Project{
+		Branch: "branch",
+		Name:   projectName,
+		GitURL: "https://example.com/foo/bar.git",
+	}
+	expectedDeps := []depmap.Dependency{
+		{Name: "dep1", Revision: "abcdef"},
+		{Name: "dep2", Revision: "ghijkl"},
+	}
+
+	assert.NoError(client.RegisterProject(expectedProject, expectedDeps))
+
+	actualProject, actualDeps, err := client.Project(projectName)
+	assert.NoError(err)
+	assert.Equal(expectedProject, actualProject)
+	assert.Equal(expectedDeps, actualDeps)
+
+}
 
 func TestProjectsForDependency(t *testing.T) {
 	for i, c := range []struct {

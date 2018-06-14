@@ -10,14 +10,14 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/mitchellh/cli"
 
-	"github.com/paultyng/go-fresh/db"
+	"github.com/paultyng/go-fresh/data"
 	"github.com/paultyng/go-fresh/depmap"
 )
 
 type projectRegisterCommand struct {
 	UI cli.Ui
 
-	db db.Client
+	db data.Client
 }
 
 func (c *projectRegisterCommand) Help() string {
@@ -81,7 +81,7 @@ func (c *projectRegisterCommand) run(ctx context.Context, args []string) error {
 	}
 	defer bdb.Close()
 
-	c.db = db.NewBoltClient(bdb)
+	c.db = data.NewBoltClient(bdb)
 
 	for _, p := range projects {
 		err = c.registerProject(ctx, tmp, p)

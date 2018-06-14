@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"log"
 
 	"github.com/paultyng/go-fresh/depmap"
 )
@@ -13,9 +14,13 @@ type Submitter interface {
 
 // SubmitPR submits a PR using the default configured Submitter implementation.
 func SubmitPR(ctx context.Context, project depmap.Project, dependency, fromrev, toversion, torev string) error {
-	submitter, err := newNomadSubmitter()
-	if err != nil {
-		return err
-	}
-	return submitter.SubmitPR(ctx, project, dependency, fromrev, toversion, torev)
+	// submitter, err := newNomadSubmitter()
+	// if err != nil {
+	// 	return err
+	// }
+	// return submitter.SubmitPR(ctx, project, dependency, fromrev, toversion, torev)
+
+	// NOOP right now
+	log.Println("nomad queuing disabled")
+	return nil
 }
