@@ -25,5 +25,5 @@ func PRSubmitCommandFactory(ui cli.Ui) cli.CommandFactory {
 }
 
 func (c *prSubmitCommand) Run(args []string) int {
-	return -1
+	panic("not implemented")
 }
