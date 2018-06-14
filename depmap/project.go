@@ -13,12 +13,14 @@ import (
 
 var errDepSystemNotUsed = errors.New("dependency system not used")
 
+// Project represents a single repository that needs updates.
 type Project struct {
 	Name   string
 	GitURL string
 	Branch string
 }
 
+// Dependency represents other packages a project depends on, and the current revision.
 type Dependency struct {
 	// Required. The package path, not necessarily the project root.
 	Name string
@@ -34,6 +36,7 @@ var depManagers = []func(*git.Worktree) ([]Dependency, error){
 	tryGovendor,
 }
 
+// Dependencies will load all of the dependencies out of the current version of the project.
 func (r *Project) Dependencies(ctx context.Context) ([]Dependency, error) {
 	repo, err := git.CloneContext(ctx, memory.NewStorage(), memfs.New(), &git.CloneOptions{
 		URL:           r.GitURL,

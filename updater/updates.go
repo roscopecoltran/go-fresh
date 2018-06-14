@@ -11,6 +11,7 @@ import (
 	"github.com/paultyng/go-fresh/depmap"
 )
 
+// Update represents a dependency update to perform.
 type Update struct {
 	ProjectRoot string
 	Name        string
@@ -23,6 +24,7 @@ type Update struct {
 	// TimeBehind    time.Duration
 }
 
+// List returns all the dependency updates possible on a list of dependencies.
 func List(ctx context.Context, tmpDir string, deps []depmap.Dependency) (map[string][]Update, error) {
 	projects := map[gps.ProjectRoot][]depmap.Dependency{}
 	updates := map[string][]Update{}
