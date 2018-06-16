@@ -8,22 +8,22 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 )
 
-func tryGovendor(tree *git.Worktree) ([]Dependency, error) {
+func tryGovendor(tree *git.Worktree) ([]Dependency, string, error) {
 	const vendorJSON = "vendor/vendor.json"
 
 	f, err := tree.Filesystem.Open(vendorJSON)
 	if err != nil {
 		if err == os.ErrNotExist {
-			return nil, errDepSystemNotUsed
+			return nil, "", errDepSystemNotUsed
 		}
-		return nil, errors.Wrapf(err, "unable to open file govendor vendor file %s", vendorJSON)
+		return nil, "", errors.Wrapf(err, "unable to open file govendor vendor file %s", vendorJSON)
 	}
 	defer f.Close()
 
 	vf := &vendorfile.File{}
 	err = vf.Unmarshal(f)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to unmarshal govendor vendorfile")
+		return nil, "", errors.Wrapf(err, "unable to unmarshal govendor vendorfile")
 	}
 
 	deps := make([]Dependency, 0, len(vf.Package))
@@ -42,5 +42,5 @@ func tryGovendor(tree *git.Worktree) ([]Dependency, error) {
 		})
 	}
 
-	return deps, nil
+	return deps, "govendor", nil
 }

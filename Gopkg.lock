@@ -318,6 +318,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/spf13/pflag"
+  packages = ["."]
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/src-d/gcfg"
   packages = [
     ".",
@@ -501,6 +507,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7e452eee16fce9a7b1815550f74fa91bf8f2bc7e9093e917bd54109f4d369d39"
+  inputs-digest = "2848e80fd0981684d07b5455dc252179ec86cabc092868a03dc824955501e40a"
   solver-name = "gps-cdcl"
   solver-version = 1

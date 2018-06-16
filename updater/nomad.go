@@ -17,10 +17,10 @@ type nomadSubmitter struct {
 	Client *api.Client
 }
 
-func newNomadSubmitter() (Submitter, error) {
+func NewNomadSubmitter(address, region string) (Submitter, error) {
 	conf := api.DefaultConfig()
-	conf.Address = "http://127.0.0.1:4646"
-	conf.Region = "global"
+	conf.Address = address
+	conf.Region = region
 	// conf.TLSConfig.CACert = d.Get("ca_file").(string)
 	// conf.TLSConfig.ClientCert = d.Get("cert_file").(string)
 	// conf.TLSConfig.ClientKey = d.Get("key_file").(string)
@@ -36,7 +36,7 @@ func newNomadSubmitter() (Submitter, error) {
 	}, nil
 }
 
-func (s *nomadSubmitter) SubmitPR(ctx context.Context, project depmap.Project, dependency, fromrev, toversion, torev string) error {
+func (s *nomadSubmitter) SubmitPR(ctx context.Context, project depmap.Project, dependency, toversion, torev string) error {
 	// QUESTION: does the nomad API not use context.Context?
 	resp, _, err := s.Client.Jobs().Dispatch(nomadJobIDGovendor, map[string]string{
 		"PROJECT":    project.Name,

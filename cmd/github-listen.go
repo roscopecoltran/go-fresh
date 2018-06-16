@@ -4,78 +4,69 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 
-	"github.com/boltdb/bolt"
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/cli"
 
 	"github.com/paultyng/go-fresh/data"
+	"github.com/paultyng/go-fresh/updater"
 )
 
 type githubListenCommand struct {
-	UI cli.Ui
+	boltCommand
+	submitterCommand
 
-	bind      string
-	secretKey []byte
+	submitter updater.Submitter
 	db        data.Client
-}
-
-func (c *githubListenCommand) Help() string {
-	// go-fresh github listen will listen for Github webhooks for:
-	// new releases: `ReleaseEvent`
-	// code pushes in monitored repo/branches
-	return "help!"
-}
-
-func (c *githubListenCommand) Synopsis() string {
-	return "listens for github webhooks"
+	secretKey []byte
+	ui        cli.Ui
 }
 
 // GithubListenCommandFactory creates the "github watch" command
 func GithubListenCommandFactory(ui cli.Ui) cli.CommandFactory {
-	return func() (cli.Command, error) {
-		return &githubListenCommand{
-			UI: ui,
-		}, nil
-	}
+	cmd := &githubListenCommand{}
+	return newCommandFactory(ui, "github listen", cmd, func(m *meta) error {
+		m.Synopsis = "listens for GitHub webhooks"
+
+		m.Flags.StringP("bind", "b", "127.0.0.1:4000", "IP and port to bind listener to")
+		m.Flags.StringP("secret-key", "k", "", "webhook secret key")
+
+		return m.Register(
+			cmd.boltCommand,
+			cmd.submitterCommand,
+		)
+	})
 }
 
-func (c *githubListenCommand) Run(args []string) int {
-	// TODO: write a shared wrapper for this output
-	err := c.run(context.Background(), args)
-	if err != nil {
-		fmt.Println(err)
-		return -1
-	}
-	return 0
-}
-
-func (c *githubListenCommand) run(ctx context.Context, args []string) error {
-	// TODO: load these from flags
-	c.bind = "127.0.0.1:4000"
-	c.secretKey = []byte("secretkey")
-
-	dir, err := os.Getwd()
+func (c *githubListenCommand) Run(ctx context.Context, r *run) error {
+	bind, err := r.flags.GetString("bind")
 	if err != nil {
 		return err
 	}
-	dbpath := filepath.Join(dir, "gofresh.db")
 
-	bdb, err := bolt.Open(dbpath, 0644, nil)
+	rawSecretKey, err := r.flags.GetString("secret-key")
+	if err != nil {
+		return err
+	}
+	c.secretKey = []byte(rawSecretKey)
+
+	bdb, err := c.DB(r)
 	if err != nil {
 		return err
 	}
 	defer bdb.Close()
-
 	c.db = data.NewBoltClient(bdb)
 
-	return http.ListenAndServe(c.bind, http.HandlerFunc(c.handleWebhook))
+	c.submitter, err = c.Submitter(r)
+	if err != nil {
+		return err
+	}
+
+	return http.ListenAndServe(bind, http.HandlerFunc(c.handleWebhook))
 }
 
 func (c *githubListenCommand) handlerError(w http.ResponseWriter, err error) {
-	c.UI.Error(fmt.Sprintf("error in handler: %s", err))
+	c.ui.Error(fmt.Sprintf("error in handler: %s", err))
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
@@ -94,7 +85,7 @@ func (c *githubListenCommand) handleWebhook(w http.ResponseWriter, r *http.Reque
 
 	switch event := event.(type) {
 	case *github.ReleaseEvent:
-		err = processReleaseEvent(r.Context(), c.db, event)
+		err = processReleaseEvent(r.Context(), c.db, c.submitter, event)
 		if err != nil {
 			c.handlerError(w, err)
 			return

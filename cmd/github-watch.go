@@ -4,86 +4,64 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/boltdb/bolt"
 	throttle "github.com/boz/go-throttle"
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/cli"
 	"github.com/pkg/errors"
-	"golang.org/x/oauth2"
 
 	"github.com/paultyng/go-fresh/data"
 	"github.com/paultyng/go-fresh/updater"
 )
 
 type githubWatchCommand struct {
-	UI cli.Ui
+	githubCommand
+	boltCommand
+	submitterCommand
 
 	db data.Client
 }
 
-func (c *githubWatchCommand) Help() string {
-	// go-fresh github watch will poll/process github's public events stream for:
-	// new releases: `ReleaseEvent`
-	// code pushes in monitored repo/branches
-	return "help!"
-}
-
-func (c *githubWatchCommand) Synopsis() string {
-	return "polls/processes github's public events stream"
-}
-
 // GithubWatchCommandFactory creates the "github watch" command
 func GithubWatchCommandFactory(ui cli.Ui) cli.CommandFactory {
-	return func() (cli.Command, error) {
-		return &githubWatchCommand{
-			UI: ui,
-		}, nil
-	}
+	cmd := &githubWatchCommand{}
+	return newCommandFactory(ui, "github watch", cmd, func(m *meta) error {
+		m.Synopsis = "polls/processes github's public events stream"
+
+		return m.Register(
+			cmd.githubCommand,
+			cmd.boltCommand,
+			cmd.submitterCommand,
+		)
+	})
 }
 
-func (c *githubWatchCommand) Run(args []string) int {
-	// TODO: write a shared wrapper for this output
-	err := c.run(context.Background(), args)
-	if err != nil {
-		fmt.Println(err)
-		return -1
-	}
-	return 0
-}
+func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
+	const (
+		perPage         = 200 // i think max is 100?
+		tickBacklog     = 100
+		apiCallsPerHour = 4800 // max 5000
+		sleep           = 1 * time.Hour / apiCallsPerHour
+	)
 
-func (c *githubWatchCommand) run(ctx context.Context, args []string) error {
-	const perPage = 200
-	//const sleep = 750 * time.Millisecond // 4800 per hour
-	const sleep = 1 * time.Hour / 4950
-	const tickBacklog = 100
-
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	dbpath := filepath.Join(dir, "gofresh.db")
-
-	bdb, err := bolt.Open(dbpath, 0644, nil)
+	bdb, err := c.DB(r)
 	if err != nil {
 		return err
 	}
 	defer bdb.Close()
-
 	c.db = data.NewBoltClient(bdb)
 
-	token := os.Getenv("GITHUB_TOKEN")
+	submitter, err := c.Submitter(r)
+	if err != nil {
+		return err
+	}
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
+	client, err := c.GithubClient(ctx, r)
+	if err != nil {
+		return err
+	}
 
 	// TODO: i imagine this will eventually grow too large, should this eject?
 	// should it be an inverse bloom or something?
@@ -114,6 +92,16 @@ func (c *githubWatchCommand) run(ctx context.Context, args []string) error {
 		log.Printf("api calls reamining: %d, reset at %v", rate.Remaining, rate.Reset)
 	})
 	defer rateLimitThrottle.Stop()
+
+	processingErrors := make(chan error)
+	go func() {
+		select {
+		case err := <-processingErrors:
+			if err != nil {
+				log.Printf("error processing events: %s", err)
+			}
+		}
+	}()
 
 	for {
 		select {
@@ -152,11 +140,11 @@ func (c *githubWatchCommand) run(ctx context.Context, args []string) error {
 				log.Println("not fast enough!")
 			}
 
-			err = processEvents(ctx, c.db, newEvents)
-			if err != nil {
-				return err
-			}
+			go func() { processingErrors <- processEvents(ctx, c.db, submitter, newEvents) }()
 
+			// record observed keys, this assumes successful processing which may not be the case
+			// do not persist this variable as its not entirely accurate outside of the singleton
+			// process
 			for _, e := range newEvents {
 				observedKeys[e.GetID()] = true
 			}
@@ -164,27 +152,33 @@ func (c *githubWatchCommand) run(ctx context.Context, args []string) error {
 	}
 }
 
-func processEvents(ctx context.Context, db data.Client, events []*github.Event) error {
+func processEvents(ctx context.Context, db data.Client, submitter updater.Submitter, events []*github.Event) error {
 	for _, e := range events {
-		if *e.Type != "ReleaseEvent" {
-			continue
-		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 
-		raw, err := e.ParsePayload()
-		if err != nil {
-			return err
-		}
-		re, ok := raw.(*github.ReleaseEvent)
-		if !ok {
-			return errors.Errorf("unable to convert event to ReleaseEvent, got %T", raw)
-		}
+			if *e.Type != "ReleaseEvent" {
+				continue
+			}
 
-		// promote repo from event to payload
-		re.Repo = e.Repo
+			raw, err := e.ParsePayload()
+			if err != nil {
+				return err
+			}
+			re, ok := raw.(*github.ReleaseEvent)
+			if !ok {
+				return errors.Errorf("unable to convert event to ReleaseEvent, got %T", raw)
+			}
 
-		err = processReleaseEvent(ctx, db, re)
-		if err != nil {
-			return err
+			// promote repo from event to payload
+			re.Repo = e.Repo
+
+			err = processReleaseEvent(ctx, db, submitter, re)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -221,7 +215,7 @@ func shouldIgnoreReleaseEvent(event *github.ReleaseEvent) bool {
 	return false
 }
 
-func processReleaseEvent(ctx context.Context, db data.Client, event *github.ReleaseEvent) error {
+func processReleaseEvent(ctx context.Context, db data.Client, submitter updater.Submitter, event *github.ReleaseEvent) error {
 	if shouldIgnoreReleaseEvent(event) {
 		return nil
 	}
@@ -243,21 +237,24 @@ func processReleaseEvent(ctx context.Context, db data.Client, event *github.Rele
 	}
 
 	for _, k := range keys {
-		log.Printf("submitting PR for %s, bump %s to %s\n", k, repoName, v.String())
-		project, _, err := db.Project(k)
-		if err == data.ErrNotFound {
-			continue
-		}
-		if err != nil {
-			return err
-		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			log.Printf("submitting PR for %s, bump %s to %s\n", k, repoName, v.String())
+			project, _, err := db.Project(k)
+			if err == data.ErrNotFound {
+				continue
+			}
+			if err != nil {
+				return err
+			}
 
-		// TODO: lookup current revision in deps
-		fromRev := ""
-
-		err = updater.SubmitPR(ctx, project, depName, fromRev, v.String(), event.GetRelease().GetTargetCommitish())
-		if err != nil {
-			return err
+			submitter := updater.NewLogOnlySubmitter()
+			err = submitter.SubmitPR(ctx, project, depName, v.String(), event.GetRelease().GetTargetCommitish())
+			if err != nil {
+				return err
+			}
 		}
 	}
 

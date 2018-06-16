@@ -9,18 +9,16 @@ import (
 
 // Submitter represents an implementation that can SubmitPR's
 type Submitter interface {
-	SubmitPR(ctx context.Context, project depmap.Project, dependency, fromrev, toversion, torev string) error
+	SubmitPR(ctx context.Context, project depmap.Project, dependency, toversion, torev string) error
 }
 
-// SubmitPR submits a PR using the default configured Submitter implementation.
-func SubmitPR(ctx context.Context, project depmap.Project, dependency, fromrev, toversion, torev string) error {
-	// submitter, err := newNomadSubmitter()
-	// if err != nil {
-	// 	return err
-	// }
-	// return submitter.SubmitPR(ctx, project, dependency, fromrev, toversion, torev)
+type logOnlySubmitter struct{}
 
-	// NOOP right now
-	log.Println("nomad queuing disabled")
+func NewLogOnlySubmitter() Submitter {
+	return &logOnlySubmitter{}
+}
+
+func (s *logOnlySubmitter) SubmitPR(ctx context.Context, project depmap.Project, dependency, toversion, torev string) error {
+	log.Printf("submit PR for %s, update %s to %s (%s)", project.Name, dependency, toversion, torev)
 	return nil
 }

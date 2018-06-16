@@ -32,12 +32,12 @@ type Dependency struct {
 	Source string
 }
 
-var depManagers = []func(*git.Worktree) ([]Dependency, error){
+var depManagers = []func(*git.Worktree) ([]Dependency, string, error){
 	tryGovendor,
 }
 
 // Dependencies will load all of the dependencies out of the current version of the project.
-func (r *Project) Dependencies(ctx context.Context) ([]Dependency, error) {
+func (r *Project) Dependencies(ctx context.Context) ([]Dependency, string, error) {
 	repo, err := git.CloneContext(ctx, memory.NewStorage(), memfs.New(), &git.CloneOptions{
 		URL:           r.GitURL,
 		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", r.Branch)),
@@ -45,24 +45,24 @@ func (r *Project) Dependencies(ctx context.Context) ([]Dependency, error) {
 		Depth:         1,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to clone repository %s", r.GitURL)
+		return nil, "", errors.Wrapf(err, "unable to clone repository %s", r.GitURL)
 	}
 
 	tree, err := repo.Worktree()
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to load work tree")
+		return nil, "", errors.Wrapf(err, "unable to load work tree")
 	}
 
 	for _, dm := range depManagers {
-		deps, err := dm(tree)
+		deps, deptype, err := dm(tree)
 		if err == errDepSystemNotUsed {
 			continue
 		}
 		if err != nil {
-			return nil, errors.Wrapf(err, "error testing for dep manager")
+			return nil, "", errors.Wrapf(err, "error testing for dep manager")
 		}
-		return deps, nil
+		return deps, deptype, nil
 	}
 
-	return nil, errors.New("no dependency management found")
+	return nil, "", errors.New("no dependency management found")
 }
