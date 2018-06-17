@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"strings"
 
 	"github.com/mitchellh/cli"
 	flag "github.com/spf13/pflag"
@@ -21,6 +24,7 @@ type meta struct {
 	Name     string
 	Flags    *flag.FlagSet
 	Synopsis string
+	Help     string
 }
 
 type command struct {
@@ -88,8 +92,33 @@ func (c *command) Synopsis() string {
 }
 
 func (c *command) Help() string {
-	// go-fresh github watch will poll/process github's public events stream for:
-	// new releases: `ReleaseEvent`
-	// code pushes in monitored repo/branches
-	return "help!"
+	help := c.meta.Help
+	if help == "" {
+		help = c.meta.Synopsis
+	}
+
+	out := &strings.Builder{}
+	fmt.Fprintf(out, "Command: %s\n\n%s\n\n", c.meta.Name, help)
+
+	if c.meta.Flags != nil {
+		fmt.Fprint(out, "Options:\n\n")
+		c.meta.Flags.VisitAll(func(f *flag.Flag) {
+			printFlag(out, f)
+		})
+	}
+
+	return strings.TrimRight(out.String(), "\n")
+}
+
+// printFlag prints a single flag to the given writer.
+func printFlag(w io.Writer, f *flag.Flag) {
+	example, _ := flag.UnquoteUsage(f)
+	if example != "" {
+		fmt.Fprintf(w, "  -%s=<%s>\n", f.Name, example)
+	} else {
+		fmt.Fprintf(w, "  -%s\n", f.Name)
+	}
+
+	indented := f.Usage
+	fmt.Fprintf(w, "%s\n\n", indented)
 }

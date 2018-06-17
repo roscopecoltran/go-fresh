@@ -30,6 +30,11 @@ func GithubWatchCommandFactory(ui cli.Ui) cli.CommandFactory {
 	return newCommandFactory(ui, "github watch", cmd, func(m *meta) error {
 		m.Synopsis = "polls/processes github's public events stream"
 
+		// TODO: help:
+		// go-fresh github watch will poll/process github's public events stream for:
+		// new releases: `ReleaseEvent`
+		// code pushes in monitored repo/branches
+
 		return m.Register(
 			cmd.githubCommand,
 			cmd.boltCommand,
