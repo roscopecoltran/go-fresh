@@ -23,6 +23,9 @@ func ProjectRegisterCommandFactory(ui cli.Ui) cli.CommandFactory {
 	return newCommandFactory(ui, "project register", cmd, func(m *meta) error {
 		m.Synopsis = "ingests dependencies for a project for future watching"
 
+		// m.Flags.StringP("type", "t", "github", "type of project (VCS host)")
+		m.Flags.StringP("branch", "b", "master", "branch of project to PR into")
+
 		return m.Register(
 			cmd.boltCommand,
 		)
@@ -30,12 +33,16 @@ func ProjectRegisterCommandFactory(ui cli.Ui) cli.CommandFactory {
 }
 
 func (c *projectRegisterCommand) Run(ctx context.Context, r *run) error {
-	projects := []depmap.Project{
-		{
-			Name:   "github.com/terraform-providers/terraform-provider-github",
-			GitURL: "https://github.com/terraform-providers/terraform-provider-github.git",
-			Branch: "master",
-		},
+	branch, err := r.flags.GetString("branch")
+	if err != nil {
+		return err
+	}
+
+	// TODO: pass in from args/flags
+	p := depmap.Project{
+		Name:   "github.com/terraform-providers/terraform-provider-github",
+		GitURL: "https://github.com/terraform-providers/terraform-provider-github.git",
+		Branch: branch,
 	}
 
 	// TODO: flag for tmp dir
@@ -52,14 +59,7 @@ func (c *projectRegisterCommand) Run(ctx context.Context, r *run) error {
 	defer bdb.Close()
 	c.db = data.NewBoltClient(bdb)
 
-	for _, p := range projects {
-		err = c.registerProject(ctx, tmp, p)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return c.registerProject(ctx, tmp, p)
 }
 
 func (c *projectRegisterCommand) registerProject(ctx context.Context, tmpDir string, project depmap.Project) error {
