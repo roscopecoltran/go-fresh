@@ -18,7 +18,7 @@ func main() {
 		},
 	}
 
-	c := cli.NewCLI("tfprovlint", "1.0.0")
+	c := cli.NewCLI("go-fresh", "1.0.0")
 
 	c.Args = os.Args[1:]
 
