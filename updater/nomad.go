@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/hashicorp/nomad/api"
@@ -17,6 +18,7 @@ const (
 type nomadSubmitter struct {
 	client  *api.Client
 	timeout time.Duration
+	poll    time.Duration
 }
 
 func NewNomadSubmitter(address, region string) (Submitter, error) {
@@ -36,6 +38,7 @@ func NewNomadSubmitter(address, region string) (Submitter, error) {
 	return &nomadSubmitter{
 		client:  client,
 		timeout: 10 * time.Minute,
+		poll:    10 * time.Second,
 	}, nil
 }
 
@@ -43,11 +46,13 @@ func (s *nomadSubmitter) JobComplete(ctx context.Context, id string) (bool, erro
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, s.timeout)
 	defer cancel()
+
 	for {
+		after := time.After(s.poll)
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()
-		default:
+		case <-after:
 			resp, _, err := s.client.Jobs().Summary(id, nil)
 			if err != nil {
 				return false, err
@@ -92,6 +97,8 @@ func (s *nomadSubmitter) SubmitPR(ctx context.Context, project depmap.Project, d
 	if err != nil {
 		return errors.Wrapf(err, "unable to dispatch nomad job")
 	}
+
+	log.Printf("dispatching job %q", resp.DispatchedJobID)
 
 	complete, err := s.JobComplete(ctx, resp.DispatchedJobID)
 	if err != nil {
