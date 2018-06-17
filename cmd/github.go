@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -28,6 +29,11 @@ func (c githubCommand) GithubClient(ctx context.Context, r *run) (*github.Client
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
+	u, _, err := client.Users.Get(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	r.ui.Info(fmt.Sprintf("using GitHub user %q", u.GetLogin()))
 
 	return client, nil
 }
