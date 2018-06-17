@@ -74,7 +74,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 
 	log.Printf("check every %v", sleep)
 
-	// buffer 10 ticks just in case
+	// buffer ticks just in case
 	after := make(chan time.Time, tickBacklog)
 	go func() {
 		tick := time.Tick(sleep)
