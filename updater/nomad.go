@@ -80,16 +80,14 @@ func (s *nomadSubmitter) JobComplete(ctx context.Context, id string) (bool, erro
 	}
 }
 
-func (s *nomadSubmitter) SubmitPR(ctx context.Context, project depmap.Project, dependency, toversion, torev string) error {
+func (s *nomadSubmitter) SubmitPR(ctx context.Context, project depmap.Project, dependency, toversion string) error {
 	// QUESTION: does the nomad API not use context.Context?
 	resp, _, err := s.client.Jobs().Dispatch(nomadJobIDGovendor, map[string]string{
 		"PROJECT":    project.Name,
 		"GIT_REMOTE": project.GitURL,
 		"GIT_BRANCH": project.Branch,
 		"DEPENDENCY": dependency,
-		//"FROMREVISION": fromrev,
 		"TOVERSION":  toversion,
-		"TOREVISION": torev,
 	}, nil, nil)
 	if err != nil {
 		return errors.Wrapf(err, "unable to dispatch nomad job")
