@@ -10,7 +10,6 @@ job "go-fresh-pr-govendor" {
       "GIT_REMOTE", 
       "GIT_BRANCH", 
       "DEPENDENCY",
-      "FROMREVISION",
       "TOVERSION",
       "TOREVISION",
     ]

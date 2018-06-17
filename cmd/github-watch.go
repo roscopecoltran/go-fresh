@@ -250,11 +250,12 @@ func processReleaseEvent(ctx context.Context, db data.Client, submitter updater.
 				return err
 			}
 
-			submitter := updater.NewLogOnlySubmitter()
 			err = submitter.SubmitPR(ctx, project, depName, v.String(), event.GetRelease().GetTargetCommitish())
 			if err != nil {
 				return err
 			}
+
+			log.Printf("PR submitted")
 		}
 	}
 
