@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/paultyng/go-fresh/updater"
+	"github.com/go-fresh/go-fresh/updater"
 )
 
 type submitterCommand struct {

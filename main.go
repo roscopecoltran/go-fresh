@@ -5,7 +5,7 @@ import (
 
 	"github.com/mitchellh/cli"
 
-	"github.com/paultyng/go-fresh/cmd"
+	"github.com/go-fresh/go-fresh/cmd"
 )
 
 func main() {

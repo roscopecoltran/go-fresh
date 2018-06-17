@@ -77,18 +77,15 @@
   name = "github.com/stretchr/testify"
   version = "1.2.2"
 
-# Fix issue, see https://github.com/coredns/coredns/pull/1203
-[[override]]
-  name = "github.com/ugorji/go"
-  revision = "8c0409fcbb70099c748d71f714529204975f6c3f"
 [[constraint]]
   branch = "master"
   name = "github.com/boz/go-throttle"
 
 [[constraint]]
-  name = "github.com/spf13/viper"
-  version = "1.0.2"
-
-[[constraint]]
   name = "github.com/spf13/pflag"
   version = "1.0.1"
+
+# Fix issue, see https://github.com/coredns/coredns/pull/1203
+[[override]]
+  name = "github.com/ugorji/go"
+  revision = "8c0409fcbb70099c748d71f714529204975f6c3f"

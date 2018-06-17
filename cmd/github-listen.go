@@ -8,8 +8,8 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/cli"
 
-	"github.com/paultyng/go-fresh/data"
-	"github.com/paultyng/go-fresh/updater"
+	"github.com/go-fresh/go-fresh/data"
+	"github.com/go-fresh/go-fresh/updater"
 )
 
 type githubListenCommand struct {

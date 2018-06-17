@@ -8,7 +8,7 @@ import (
 	"github.com/golang/dep/gps"
 	"github.com/pkg/errors"
 
-	"github.com/paultyng/go-fresh/depmap"
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 // Update represents a dependency update to perform.

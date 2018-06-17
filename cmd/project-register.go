@@ -7,8 +7,8 @@ import (
 
 	"github.com/mitchellh/cli"
 
-	"github.com/paultyng/go-fresh/data"
-	"github.com/paultyng/go-fresh/depmap"
+	"github.com/go-fresh/go-fresh/data"
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 type projectRegisterCommand struct {

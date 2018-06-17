@@ -12,8 +12,8 @@ import (
 	"github.com/mitchellh/cli"
 	"github.com/pkg/errors"
 
-	"github.com/paultyng/go-fresh/data"
-	"github.com/paultyng/go-fresh/updater"
+	"github.com/go-fresh/go-fresh/data"
+	"github.com/go-fresh/go-fresh/updater"
 )
 
 type githubWatchCommand struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/paultyng/go-fresh/depmap"
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 // Submitter represents an implementation that can SubmitPR's

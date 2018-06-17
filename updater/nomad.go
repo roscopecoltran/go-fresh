@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/nomad/api"
-	"github.com/paultyng/go-fresh/depmap"
 	"github.com/pkg/errors"
+
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 const (

@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/boltdb/bolt"
-	"github.com/paultyng/go-fresh/depmap"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 func TestRegisterProject_RoundTrip(t *testing.T) {

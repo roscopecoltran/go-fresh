@@ -8,7 +8,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
 
-	"github.com/paultyng/go-fresh/depmap"
+	"github.com/go-fresh/go-fresh/depmap"
 )
 
 var (
