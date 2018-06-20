@@ -126,6 +126,11 @@ func (c *githubWatchCommand) Run(ctx context.Context) error {
 					// if its a rate limit error, just try next tick
 					continue
 				}
+				if resp.StatusCode == 502 {
+					// bad gateway, just ignore for now and keep trying
+					// TODO: maybe die after enough of these?
+					continue
+				}
 				return err
 			}
 
