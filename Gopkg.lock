@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/armon/go-metrics"
   packages = ["."]
-  revision = "783273d703149aaeb9897cf58613d5af48861c25"
+  revision = "58588f401c2cc130a7308a52ca3bc6c0a76db04b"
 
 [[projects]]
   branch = "master"
@@ -78,13 +78,13 @@
     "gps/pkgtree",
     "internal/fs"
   ]
-  revision = "902d09c4daa3cafc67d1e96deceba5eaba5cbca0"
+  revision = "1550da37d8fab9ed2dbc4bd04290e6c8dd3ff04a"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/google/go-github"
@@ -189,8 +189,8 @@
     "helper/uuid",
     "nomad/structs"
   ]
-  revision = "1eedb7753f93dcd827819e42e8583cebe5fbc075"
-  version = "v0.8.3"
+  revision = "75c5fb48c53cfa95926a941a55b3f06553be2d0f"
+  version = "v0.8.4"
 
 [[projects]]
   name = "github.com/hashicorp/raft"
@@ -274,7 +274,7 @@
   branch = "master"
   name = "github.com/nightlyone/lockfile"
   packages = ["."]
-  revision = "6a197d5ea61168f2ac821de2b7f011b250904900"
+  revision = "0ad87eef1443f64d3d8c50da647e2b1552851124"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
@@ -364,6 +364,7 @@
     "ed25519",
     "ed25519/internal/edwards25519",
     "internal/chacha20",
+    "internal/subtle",
     "openpgp",
     "openpgp/armor",
     "openpgp/elgamal",
@@ -375,7 +376,7 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
+  revision = "7f39a6fea4fe9364fb61e1def6a268a51b4f3a06"
 
 [[projects]]
   branch = "master"
@@ -384,7 +385,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
@@ -393,7 +394,7 @@
     ".",
     "internal"
   ]
-  revision = "1e0a3fa8ba9a5c9eb35c271780101fdaf1b205d7"
+  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
   branch = "master"
@@ -409,7 +410,7 @@
     "unix",
     "windows"
   ]
-  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
+  revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -435,8 +436,8 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [[projects]]
   name = "gopkg.in/src-d/go-billy.v4"
@@ -448,8 +449,8 @@
     "osfs",
     "util"
   ]
-  revision = "df053870ae7070b0350624ba5a22161ba3796cc0"
-  version = "v4.1.1"
+  revision = "83cf655d40b15b427014d7875d10850f96edba14"
+  version = "v4.2.0"
 
 [[projects]]
   name = "gopkg.in/src-d/go-git.v4"
