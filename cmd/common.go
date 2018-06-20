@@ -10,14 +10,32 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-type run struct {
-	ui    cli.Ui
-	flags *flag.FlagSet
-	args  []string
+type contextKey string
+
+func (k contextKey) String() string {
+	return "go-fresh/cmd contextKey: " + string(k)
+}
+
+var (
+	contextKeyUI    = contextKey("ui")
+	contextKeyFlags = contextKey("flags")
+	contextKeyArgs  = contextKey("args")
+)
+
+func ui(ctx context.Context) cli.Ui {
+	return ctx.Value(contextKeyUI).(cli.Ui)
+}
+
+func flags(ctx context.Context) *flag.FlagSet {
+	return ctx.Value(contextKeyFlags).(*flag.FlagSet)
+}
+
+func args(ctx context.Context) []string {
+	return ctx.Value(contextKeyArgs).([]string)
 }
 
 type runner interface {
-	Run(context.Context, *run) error
+	Run(context.Context) error
 }
 
 type meta struct {
@@ -75,11 +93,13 @@ func (c *command) Run(args []string) int {
 		c.ui.Error(err.Error())
 		return -2
 	}
-	err = c.runner.Run(context.Background(), &run{
-		args:  args,
-		flags: c.meta.Flags,
-		ui:    c.ui,
-	})
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, contextKeyUI, c.ui)
+	ctx = context.WithValue(ctx, contextKeyFlags, c.meta.Flags)
+	ctx = context.WithValue(ctx, contextKeyArgs, args)
+
+	err = c.runner.Run(ctx)
 	if err != nil {
 		c.ui.Error(err.Error())
 		return -1

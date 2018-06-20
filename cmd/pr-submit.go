@@ -31,30 +31,31 @@ func PRSubmitCommandFactory(ui cli.Ui) cli.CommandFactory {
 	})
 }
 
-func (c *prSubmitCommand) Run(ctx context.Context, r *run) error {
-	projectName, err := r.flags.GetString("project")
+func (c *prSubmitCommand) Run(ctx context.Context) error {
+	projectName, err := flags(ctx).GetString("project")
 	if err != nil {
 		return err
 	}
 	if projectName == "" {
 		return errors.Errorf("project is required")
 	}
-	dependency, err := r.flags.GetString("dependency")
+	dependency, err := flags(ctx).GetString("dependency")
 	if err != nil {
 		return err
 	}
 	if dependency == "" {
 		return errors.Errorf("dependency is required")
 	}
-	toversion, err := r.flags.GetString("to-version")
+	toversion, err := flags(ctx).GetString("to-version")
 	if err != nil {
 		return err
 	}
 	if toversion == "" {
 		return errors.Errorf("to-version is required")
 	}
+	// TODO: parse toversion to check valid semver?
 
-	bdb, err := c.DB(r)
+	bdb, err := c.DB(ctx)
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (c *prSubmitCommand) Run(ctx context.Context, r *run) error {
 		return err
 	}
 
-	submitter, err := c.Submitter(r)
+	submitter, err := c.Submitter(ctx)
 	if err != nil {
 		return err
 	}

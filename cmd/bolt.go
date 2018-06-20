@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 
@@ -16,8 +17,8 @@ func (c boltCommand) Flags(m *meta) error {
 	return nil
 }
 
-func (c boltCommand) DB(r *run) (*bolt.DB, error) {
-	dbfile, err := r.flags.GetString("db-file")
+func (c boltCommand) DB(ctx context.Context) (*bolt.DB, error) {
+	dbfile, err := flags(ctx).GetString("db-file")
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +27,6 @@ func (c boltCommand) DB(r *run) (*bolt.DB, error) {
 		return nil, err
 	}
 
-	r.ui.Info(fmt.Sprintf("using BoltDB file %q", dbfile))
+	ui(ctx).Info(fmt.Sprintf("using BoltDB file %q", dbfile))
 	return bolt.Open(dbfile, 0644, nil)
 }

@@ -24,7 +24,9 @@ type githubListenCommand struct {
 
 // GithubListenCommandFactory creates the "github watch" command
 func GithubListenCommandFactory(ui cli.Ui) cli.CommandFactory {
-	cmd := &githubListenCommand{}
+	cmd := &githubListenCommand{
+		ui: ui,
+	}
 	return newCommandFactory(ui, "github listen", cmd, func(m *meta) error {
 		m.Synopsis = "listens for GitHub webhooks"
 
@@ -38,26 +40,26 @@ func GithubListenCommandFactory(ui cli.Ui) cli.CommandFactory {
 	})
 }
 
-func (c *githubListenCommand) Run(ctx context.Context, r *run) error {
-	bind, err := r.flags.GetString("bind")
+func (c *githubListenCommand) Run(ctx context.Context) error {
+	bind, err := flags(ctx).GetString("bind")
 	if err != nil {
 		return err
 	}
 
-	rawSecretKey, err := r.flags.GetString("secret-key")
+	rawSecretKey, err := flags(ctx).GetString("secret-key")
 	if err != nil {
 		return err
 	}
 	c.secretKey = []byte(rawSecretKey)
 
-	bdb, err := c.DB(r)
+	bdb, err := c.DB(ctx)
 	if err != nil {
 		return err
 	}
 	defer bdb.Close()
 	c.db = data.NewBoltClient(bdb)
 
-	c.submitter, err = c.Submitter(r)
+	c.submitter, err = c.Submitter(ctx)
 	if err != nil {
 		return err
 	}
@@ -83,9 +85,12 @@ func (c *githubListenCommand) handleWebhook(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	ctx := r.Context()
+	ctx = context.WithValue(ctx, contextKeyUI, c.ui)
+
 	switch event := event.(type) {
 	case *github.ReleaseEvent:
-		err = processReleaseEvent(r.Context(), c.db, c.submitter, event)
+		err = processReleaseEvent(ctx, c.db, c.submitter, event)
 		if err != nil {
 			c.handlerError(w, err)
 			return

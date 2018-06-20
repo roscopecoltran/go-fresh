@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -20,23 +21,23 @@ func (c submitterCommand) Flags(m *meta) error {
 	return nil
 }
 
-func (c submitterCommand) Submitter(r *run) (updater.Submitter, error) {
-	t, err := r.flags.GetString("submitter")
+func (c submitterCommand) Submitter(ctx context.Context) (updater.Submitter, error) {
+	t, err := flags(ctx).GetString("submitter")
 	if err != nil {
 		return nil, err
 	}
 
-	r.ui.Info(fmt.Sprintf("using submitter type %q", t))
+	ui(ctx).Info(fmt.Sprintf("using submitter type %q", t))
 
 	switch t {
 	case "logonly":
 		return updater.NewLogOnlySubmitter(), nil
 	case "nomad":
-		address, err := r.flags.GetString("nomad-address")
+		address, err := flags(ctx).GetString("nomad-address")
 		if err != nil {
 			return nil, err
 		}
-		region, err := r.flags.GetString("nomad-region")
+		region, err := flags(ctx).GetString("nomad-region")
 		if err != nil {
 			return nil, err
 		}

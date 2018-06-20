@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -43,7 +42,7 @@ func GithubWatchCommandFactory(ui cli.Ui) cli.CommandFactory {
 	})
 }
 
-func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
+func (c *githubWatchCommand) Run(ctx context.Context) error {
 	const (
 		perPage         = 200 // i think max is 100?
 		tickBacklog     = 100
@@ -51,19 +50,21 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 		sleep           = 1 * time.Hour / apiCallsPerHour
 	)
 
-	bdb, err := c.DB(r)
+	ui := ui(ctx)
+
+	bdb, err := c.DB(ctx)
 	if err != nil {
 		return err
 	}
 	defer bdb.Close()
 	c.db = data.NewBoltClient(bdb)
 
-	submitter, err := c.Submitter(r)
+	submitter, err := c.Submitter(ctx)
 	if err != nil {
 		return err
 	}
 
-	client, err := c.GithubClient(ctx, r)
+	client, err := c.GithubClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -72,7 +73,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 	// should it be an inverse bloom or something?
 	observedKeys := map[string]bool{}
 
-	log.Printf("check every %v", sleep)
+	ui.Info(fmt.Sprintf("pool every %v", sleep))
 
 	// buffer ticks just in case
 	after := make(chan time.Time, tickBacklog)
@@ -94,7 +95,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 	}
 	rate := resp.Rate
 	rateLimitThrottle := throttle.ThrottleFunc(5*time.Minute, false, func() {
-		log.Printf("api calls reamining: %d, reset at %v", rate.Remaining, rate.Reset)
+		ui.Info(fmt.Sprintf("api calls reamining: %d, reset at %v", rate.Remaining, rate.Reset))
 	})
 	defer rateLimitThrottle.Stop()
 
@@ -103,7 +104,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 		select {
 		case err := <-processingErrors:
 			if err != nil {
-				log.Printf("error processing events: %s", err)
+				ui.Error(fmt.Sprintf("error processing events: %s", err))
 			}
 		}
 	}()
@@ -114,7 +115,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 			return ctx.Err()
 		case <-after:
 			if len(after) > 1 {
-				log.Printf("%d tick backlog", len(after))
+				ui.Warn(fmt.Sprintf("%d tick backlog", len(after)))
 			}
 
 			events, resp, err := client.Activity.ListEvents(ctx, &github.ListOptions{
@@ -142,7 +143,7 @@ func (c *githubWatchCommand) Run(ctx context.Context, r *run) error {
 
 			// if its not the first pass and the new events == page size, this method isn't fast enough
 			if len(newEvents) == len(events) && len(observedKeys) > 0 {
-				log.Println("not fast enough!")
+				ui.Warn("not fast enough!")
 			}
 
 			go func() { processingErrors <- processEvents(ctx, c.db, submitter, newEvents) }()
@@ -232,8 +233,6 @@ func processReleaseEvent(ctx context.Context, db data.Client, submitter updater.
 	tagName := event.Release.GetTagName()
 	v, _ := semver.NewVersion(tagName)
 
-	log.Printf("release for %s, %q", repoName, v.String())
-
 	// TODO: need to fork this off to a new go routine so that tick listening doesn't backup too much
 
 	keys, err := db.ProjectsForDependency(depName)
@@ -246,7 +245,7 @@ func processReleaseEvent(ctx context.Context, db data.Client, submitter updater.
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			log.Printf("submitting PR for %s, bump %s to %s\n", k, repoName, v.String())
+			ui(ctx).Info(fmt.Sprintf("submitting PR for %s, bump %s to %s\n", k, repoName, v.String()))
 			project, _, err := db.Project(k)
 			if err == data.ErrNotFound {
 				continue
@@ -260,7 +259,7 @@ func processReleaseEvent(ctx context.Context, db data.Client, submitter updater.
 				return err
 			}
 
-			log.Printf("PR submitted")
+			ui(ctx).Info("PR submitted")
 		}
 	}
 

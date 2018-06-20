@@ -17,8 +17,8 @@ func (c githubCommand) Flags(m *meta) error {
 	return nil
 }
 
-func (c githubCommand) GithubClient(ctx context.Context, r *run) (*github.Client, error) {
-	token, err := r.flags.GetString("github-token")
+func (c githubCommand) GithubClient(ctx context.Context) (*github.Client, error) {
+	token, err := flags(ctx).GetString("github-token")
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (c githubCommand) GithubClient(ctx context.Context, r *run) (*github.Client
 	if err != nil {
 		return nil, err
 	}
-	r.ui.Info(fmt.Sprintf("using GitHub user %q", u.GetLogin()))
+	ui(ctx).Info(fmt.Sprintf("using GitHub user %q", u.GetLogin()))
 
 	return client, nil
 }

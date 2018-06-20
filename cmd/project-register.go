@@ -32,8 +32,8 @@ func ProjectRegisterCommandFactory(ui cli.Ui) cli.CommandFactory {
 	})
 }
 
-func (c *projectRegisterCommand) Run(ctx context.Context, r *run) error {
-	branch, err := r.flags.GetString("branch")
+func (c *projectRegisterCommand) Run(ctx context.Context) error {
+	branch, err := flags(ctx).GetString("branch")
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (c *projectRegisterCommand) Run(ctx context.Context, r *run) error {
 	}
 	defer os.RemoveAll(tmp)
 
-	bdb, err := c.DB(r)
+	bdb, err := c.DB(ctx)
 	if err != nil {
 		return err
 	}
